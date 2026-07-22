@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="§ 6 TGV" />
+  <title>§ 6 TGV – Fahrtenkalender</title>
+
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --primary: #111827;
+      --green: #22c55e;
+      --green-dark: #15803d;
+      --red: #ef4444;
+      --red-dark: #b91c1c;
+      --amber: #f59e0b;
+      --gray: #9ca3af;
+      --blue: #3b82f6;
+      --shadow: 0 10px 30px rgba(17,24,39,.08);
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,.10), transparent 28rem),
+        var(--bg);
+    }
+
+    button, select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      padding:
+        max(18px, env(safe-area-inset-top))
+        14px
+        max(28px, env(safe-area-inset-bottom));
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 4vw, 2.1rem);
+      line-height: 1.1;
+      letter-spacing: -.03em;
+    }
+
+    .title-wrap p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .icon-button {
+      border: 0;
+      border-radius: 14px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      width: 46px;
+      height: 46px;
+      cursor: pointer;
+      font-size: 1.15rem;
+    }
+
+    .panel {
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(209,213,219,.75);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 52px 1fr 52px;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-button {
+      border: 0;
+      background: #f3f4f6;
+      border-radius: 14px;
+      height: 46px;
+      cursor: pointer;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .month-select {
+      width: 100%;
+      height: 46px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0 14px;
+      background: white;
+      color: var(--text);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .weekdays,
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .weekdays {
+      padding: 10px 8px 4px;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .weekday {
+      padding: 8px 0;
+    }
+
+    .calendar {
+      gap: 7px;
+      padding: 8px 8px 14px;
+    }
+
+    .day {
+      position: relative;
+      min-height: 92px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: white;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+    }
+
+    .day:active {
+      transform: scale(.97);
+    }
+
+    .day.other-month {
+      opacity: .28;
+      pointer-events: none;
+    }
+
+    .day.today {
+      box-shadow: inset 0 0 0 2px var(--blue);
+    }
+
+    .date-number {
+      font-weight: 800;
+      font-size: .95rem;
+    }
+
+    .day-state {
+      display: grid;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .state-line {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+      border: 0;
+      padding: 4px 5px;
+      border-radius: 9px;
+      background: #f3f4f6;
+      font-size: .72rem;
+      line-height: 1.1;
+      color: var(--muted);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .state-line:active {
+      transform: scale(.97);
+    }
+
+    .note-input {
+      width: 100%;
+      min-width: 0;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 6px;
+      background: #fff;
+      color: var(--text);
+      font-size: .68rem;
+      line-height: 1.2;
+    }
+
+    .note-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .note-input:focus {
+      outline: 2px solid rgba(59,130,246,.28);
+      border-color: var(--blue);
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+      background: var(--gray);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+    }
+
+    .dot.yes {
+      background: var(--green);
+    }
+
+    .dot.no {
+      background: var(--red);
+    }
+
+    .dot.na {
+      background: var(--gray);
+    }
+
+    .day.weekend {
+      background: #f9fafb;
+    }
+
+    .day.exception {
+      border-color: var(--amber);
+      box-shadow: inset 0 0 0 1px var(--amber);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 14px;
+      border-top: 1px solid var(--border);
+      background: #fafafa;
+    }
+
+    .stat {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.45rem;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .72rem;
+    }
+
+    .legend,
+    .actions,
+    .help {
+      margin-top: 14px;
+      padding: 14px;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .84rem;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .action-button {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      min-height: 46px;
+      padding: 10px;
+      background: white;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .action-button.danger {
+      color: var(--red-dark);
+    }
+
+    .help {
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.5;
+    }
+
+    .help strong {
+      color: var(--text);
+    }
+
+    dialog {
+      width: min(calc(100% - 28px), 440px);
+      border: 0;
+      border-radius: 22px;
+      padding: 0;
+      box-shadow: 0 24px 80px rgba(0,0,0,.28);
+    }
+
+    dialog::backdrop {
+      background: rgba(17,24,39,.55);
+      backdrop-filter: blur(5px);
+    }
+
+    .dialog-content {
+      padding: 18px;
+    }
+
+    .dialog-content h2 {
+      margin: 0 0 4px;
+      font-size: 1.25rem;
+    }
+
+    .dialog-subtitle {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .switch-row:first-of-type {
+      border-top: 0;
+    }
+
+    .switch-label strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .switch-label span {
+      color: var(--muted);
+      font-size: .8rem;
+    }
+
+    .switch {
+      position: relative;
+      width: 58px;
+      height: 34px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: var(--red);
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      transition: .2s;
+    }
+
+    .switch input:checked + .slider {
+      background: var(--green);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(24px);
+    }
+
+    .dialog-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .dialog-button {
+      border: 0;
+      border-radius: 14px;
+      min-height: 48px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .dialog-button.secondary {
+      background: #e5e7eb;
+      color: var(--text);
+    }
+
+    .dialog-button.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: translate(-50%, 20px);
+      background: var(--primary);
+      color: white;
+      padding: 11px 16px;
+      border-radius: 999px;
+      font-size: .85rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+      z-index: 20;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .day {
+        min-height: 80px;
+        padding: 6px;
+        border-radius: 13px;
+      }
+
+      .state-line {
+        gap: 3px;
+        padding: 4px;
+        font-size: .62rem;
+      }
+
+      .note-input {
+        padding: 4px;
+        font-size: .62rem;
+      }
+
+      .summary {
+        padding: 10px;
+        gap: 7px;
+      }
+
+      .stat {
+        padding: 10px 5px;
+      }
+
+      .actions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .header .icon-button,
+      .toolbar,
+      .actions,
+      .help,
+      dialog,
+      .toast {
+        display: none !important;
+      }
+
+      .app {
+        width: 100%;
+        padding: 0;
+      }
+
+      .panel,
+      .legend {
+        box-shadow: none;
+      }
+
+      .day {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="title-wrap">
+        <h1>§ 6 TGV – Fahrtenkalender</h1>
+        <p>Tippe auf einen Tag und ändere nur die Ausnahme.</p>
+      </div>
+      <button class="icon-button" id="todayButton" aria-label="Zum aktuellen Monat">◎</button>
+    </header>
+
+    <section class="panel">
+      <div class="toolbar">
+        <button class="nav-button" id="prevMonth" aria-label="Vorheriger Monat">‹</button>
+        <select class="month-select" id="monthSelect" aria-label="Monat auswählen"></select>
+        <button class="nav-button" id="nextMonth" aria-label="Nächster Monat">›</button>
+      </div>
+
+      <div class="weekdays">
+        <div class="weekday">Mo</div>
+        <div class="weekday">Di</div>
+        <div class="weekday">Mi</div>
+        <div class="weekday">Do</div>
+        <div class="weekday">Fr</div>
+        <div class="weekday">Sa</div>
+        <div class="weekday">So</div>
+      </div>
+
+      <div class="calendar" id="calendar"></div>
+
+      <div class="summary">
+        <div class="stat">
+          <strong id="drivenCount">0</strong>
+          <span>gefahren</span>
+        </div>
+        <div class="stat">
+          <strong id="over11Count">0</strong>
+          <span>über 11 Stunden</span>
+        </div>
+        <div class="stat">
+          <strong id="exceptionCount">0</strong>
+          <span>Abweichungen</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel legend">
+      <div class="legend-grid">
+        <div class="legend-item"><span class="dot yes"></span> Ja / trifft zu</div>
+        <div class="legend-item"><span class="dot no"></span> Nein / trifft nicht zu</div>
+        <div class="legend-item"><span class="dot na"></span> Wochenende</div>
+        <div class="legend-item">🟠 Abweichung vom Standard</div>
+      </div>
+    </section>
+
+    <section class="panel actions">
+      <div class="actions-grid">
+        <button class="action-button" id="resetMonth">Monat zurücksetzen</button>
+        <button class="action-button" id="printMonth">Drucken / PDF</button>
+        <button class="action-button danger" id="deleteAll">Alle Daten löschen</button>
+      </div>
+    </section>
+
+    <section class="panel help">
+      <strong>Automatische Vorgabe:</strong><br>
+      Montag bis Donnerstag: gefahren und länger als 11 Stunden abwesend.<br>
+      Freitag: gefahren, aber nicht länger als 11 Stunden abwesend.<br>
+      Samstag und Sonntag: keine Fahrt und keine Abwesenheit über 11 Stunden.<br><br>
+      Tippe direkt auf „Fahrt“ oder „&gt; 11 h“, um den jeweiligen Status umzuschalten.
+      Notizen werden beim Verlassen des Feldes automatisch gespeichert.
+      Alle Änderungen werden ausschließlich in diesem Browser gespeichert.
+    </section>
+  </main>
+
+  <div class="toast" id="toast">Gespeichert</div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "tgv6-calendar-v1";
+      const monthNames = [
+        "Januar", "Februar", "März", "April", "Mai", "Juni",
+        "Juli", "August", "September", "Oktober", "November", "Dezember"
+      ];
+
+      const calendarEl = document.getElementById("calendar");
+      const monthSelect = document.getElementById("monthSelect");
+      const drivenCountEl = document.getElementById("drivenCount");
+      const over11CountEl = document.getElementById("over11Count");
+      const exceptionCountEl = document.getElementById("exceptionCount");
+      const toast = document.getElementById("toast");
+
+      let data = loadData();
+      let current = new Date();
+      current.setDate(1);
+
+      function pad(value) {
+        return String(value).padStart(2, "0");
+      }
+
+      function dateKey(date) {
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+      }
+
+      function monthKey(date) {
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}`;
+      }
+
+      function loadData() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          return parsed && typeof parsed === "object" ? parsed : {};
+        } catch {
+          return {};
+        }
+      }
+
+      function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function getDefaultState(date) {
+        const weekday = date.getDay();
+
+        if (weekday === 0 || weekday === 6) {
+          return { driven: false, over11: false, note: "" };
+        }
+
+        if (weekday === 5) {
+          return { driven: true, over11: false, note: "" };
+        }
+
+        return { driven: true, over11: true, note: "" };
+      }
+
+      function getState(date) {
+        const key = dateKey(date);
+        const standard = getDefaultState(date);
+        const stored = data[key];
+
+        return stored
+          ? {
+              driven: Boolean(stored.driven),
+              over11: Boolean(stored.over11),
+              note: typeof stored.note === "string" ? stored.note : ""
+            }
+          : standard;
+      }
+
+      function saveDayState(date, nextState) {
+        const key = dateKey(date);
+        const standard = getDefaultState(date);
+        const normalized = {
+          driven: Boolean(nextState.driven),
+          over11: Boolean(nextState.over11),
+          note: String(nextState.note ?? "").trim()
+        };
+
+        const isStandard =
+          normalized.driven === standard.driven &&
+          normalized.over11 === standard.over11 &&
+          normalized.note === "";
+
+        if (isStandard) {
+          delete data[key];
+        } else {
+          data[key] = normalized;
+        }
+
+        saveData();
+      }
+
+      function isException(date) {
+        const key = dateKey(date);
+        if (!data[key]) return false;
+
+        const actual = data[key];
+        const standard = getDefaultState(date);
+        return actual.driven !== standard.driven || actual.over11 !== standard.over11;
+      }
+
+      function buildMonthSelector() {
+        monthSelect.innerHTML = "";
+        const currentYear = new Date().getFullYear();
+
+        for (let year = currentYear - 3; year <= currentYear + 5; year++) {
+          for (let month = 0; month < 12; month++) {
+            const option = document.createElement("option");
+            option.value = `${year}-${pad(month + 1)}`;
+            option.textContent = `${monthNames[month]} ${year}`;
+            monthSelect.appendChild(option);
+          }
+        }
+      }
+
+      function render() {
+        monthSelect.value = monthKey(current);
+        calendarEl.innerHTML = "";
+
+        const year = current.getFullYear();
+        const month = current.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const mondayIndex = (firstDay.getDay() + 6) % 7;
+        const totalCells = Math.ceil((mondayIndex + lastDay.getDate()) / 7) * 7;
+        const todayKey = dateKey(new Date());
+
+        let drivenCount = 0;
+        let over11Count = 0;
+        let exceptionCount = 0;
+
+        for (let cell = 0; cell < totalCells; cell++) {
+          const dayNumber = cell - mondayIndex + 1;
+          const date = new Date(year, month, dayNumber);
+          const inCurrentMonth = date.getMonth() === month;
+          const state = getState(date);
+          const weekend = date.getDay() === 0 || date.getDay() === 6;
+          const exception = inCurrentMonth && isException(date);
+
+          if (inCurrentMonth) {
+            if (state.driven) drivenCount++;
+            if (state.over11) over11Count++;
+            if (exception) exceptionCount++;
+          }
+
+          const day = document.createElement("div");
+          day.className = "day";
+          if (!inCurrentMonth) day.classList.add("other-month");
+          if (weekend) day.classList.add("weekend");
+          if (dateKey(date) === todayKey) day.classList.add("today");
+          if (exception) day.classList.add("exception");
+
+          day.innerHTML = `
+            <span class="date-number">${date.getDate()}</span>
+            <span class="day-state">
+              <button type="button" class="state-line drive" aria-label="Gefahren umschalten">
+                <span class="dot ${state.driven ? "yes" : "no"}"></span>
+                <span>Fahrt</span>
+              </button>
+              <button type="button" class="state-line away" aria-label="Abwesenheit über 11 Stunden umschalten">
+                <span class="dot ${state.over11 ? "yes" : "no"}"></span>
+                <span>&gt; 11 h</span>
+              </button>
+              <input
+                class="note-input"
+                type="text"
+                maxlength="120"
+                placeholder="Notiz"
+                value="${escapeHtml(state.note)}"
+                aria-label="Notiz für den ${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}"
+              >
+            </span>
+          `;
+
+          if (inCurrentMonth) {
+            const driveButton = day.querySelector(".drive");
+            const awayButton = day.querySelector(".away");
+            const noteInput = day.querySelector(".note-input");
+
+            driveButton.addEventListener("click", () => {
+              const currentState = getState(date);
+              saveDayState(date, { ...currentState, driven: !currentState.driven });
+              render();
+              showToast("Fahrt geändert");
+            });
+
+            awayButton.addEventListener("click", () => {
+              const currentState = getState(date);
+              saveDayState(date, { ...currentState, over11: !currentState.over11 });
+              render();
+              showToast("Abwesenheit geändert");
+            });
+
+            noteInput.addEventListener("change", () => {
+              const currentState = getState(date);
+              saveDayState(date, { ...currentState, note: noteInput.value });
+              render();
+              showToast("Notiz gespeichert");
+            });
+
+            noteInput.addEventListener("keydown", event => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                noteInput.blur();
+              }
+            });
+          }
+
+          calendarEl.appendChild(day);
+        }
+
+        drivenCountEl.textContent = drivenCount;
+        over11CountEl.textContent = over11Count;
+        exceptionCountEl.textContent = exceptionCount;
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove("show"), 1700);
+      }
+
+      document.getElementById("prevMonth").addEventListener("click", () => {
+        current.setMonth(current.getMonth() - 1);
+        render();
+      });
+
+      document.getElementById("nextMonth").addEventListener("click", () => {
+        current.setMonth(current.getMonth() + 1);
+        render();
+      });
+
+      document.getElementById("todayButton").addEventListener("click", () => {
+        current = new Date();
+        current.setDate(1);
+        render();
+      });
+
+      monthSelect.addEventListener("change", () => {
+        const [year, month] = monthSelect.value.split("-").map(Number);
+        current = new Date(year, month - 1, 1);
+        render();
+      });
+
+      document.getElementById("resetMonth").addEventListener("click", () => {
+        const prefix = monthKey(current);
+        const hasEntries = Object.keys(data).some(key => key.startsWith(prefix));
+
+        if (!hasEntries) {
+          showToast("Monat entspricht bereits dem Standard");
+          return;
+        }
+
+        if (confirm(`Alle Änderungen für ${monthNames[current.getMonth()]} ${current.getFullYear()} zurücksetzen?`)) {
+          Object.keys(data).forEach(key => {
+            if (key.startsWith(prefix)) delete data[key];
+          });
+          saveData();
+          render();
+          showToast("Monat zurückgesetzt");
+        }
+      });
+
+      document.getElementById("printMonth").addEventListener("click", () => {
+        window.print();
+      });
+
+      document.getElementById("deleteAll").addEventListener("click", () => {
+        if (confirm("Wirklich alle gespeicherten Änderungen für sämtliche Monate löschen?")) {
+          data = {};
+          saveData();
+          render();
+          showToast("Alle Daten gelöscht");
+        }
+      });
+
+      buildMonthSelector();
+      render();
+    })();
+  </script>
+</body>
+</html>
