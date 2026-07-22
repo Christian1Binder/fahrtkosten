@@ -1,40 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#111827" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="§ 6 TGV" />
-  <title>§ 6 TGV – Fahrtenkalender</title>
-
-  <style>
-    :root {
-      --bg: #f3f4f6;
-      --card: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #d1d5db;
-      --primary: #111827;
-      --green: #22c55e;
-      --green-dark: #15803d;
-      --red: #ef4444;
-      --red-dark: #b91c1c;
-      --amber: #f59e0b;
-      --gray: #9ca3af;
-      --blue: #3b82f6;
-      --shadow: 0 10px 30px rgba(17,24,39,.08);
-      --radius: 20px;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html {
-      background: var(--bg);
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>§ 6 TGV – Fahrtenkalender</title>
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;--border:#d1d5db;--green:#22c55e;--red:#ef4444;--orange:#f59e0b;--blue:#3b82f6;--shadow:0 10px 30px #11182714}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:var(--bg)}button,select,input{font:inherit}.app{max-width:980px;margin:auto;padding:16px 8px 28px}.head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin:0 5px 14px}h1{margin:0;font-size:clamp(1.4rem,4vw,2rem)}.sub{margin:5px 0 0;color:var(--muted);font-size:.9rem}.btn{border:0;border-radius:13px;padding:11px 14px;font-weight:700;cursor:pointer}.dark{background:#111827;color:#fff}.light{background:#e5e7eb;color:#111827}.card{background:#fff;border:1px solid #d1d5db;border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.account{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;margin-bottom:13px}.account strong,.account span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.account span{font-size:.75rem;color:var(--muted)}.sync{font-size:.72rem;color:var(--muted);margin-top:4px}.sync i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9ca3af;margin-right:5px}.sync i.ok{background:var(--green)}.sync i.wait{background:var(--orange)}.sync i.err{background:var(--red)}.toolbar{display:grid;grid-template-columns:50px 1fr 50px;gap:8px;padding:11px;border-bottom:1px solid var(--border)}.toolbar button,.toolbar select{height:44px;border:1px solid var(--border);border-radius:13px;background:#fff;font-weight:700}.week,.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.week{padding:8px 6px 2px;text-align:center;color:var(--muted);font-size:.75rem;font-weight:700}.week div{padding:6px 0}.cal{gap:6px;padding:7px}.day{min-height:116px;border:1px solid var(--border);border-radius:14px;padding:6px;display:flex;flex-direction:column;background:#fff}.day.weekend{background:#f9fafb}.day.today{box-shadow:inset 0 0 0 2px var(--blue)}.day.exception{border-color:var(--orange);box-shadow:inset 0 0 0 1px var(--orange)}.num{font-weight:800;font-size:.9rem;margin-bottom:5px}.toggle{border:0;border-radius:8px;padding:5px 4px;margin-bottom:4px;background:#f3f4f6;color:var(--muted);display:flex;align-items:center;gap:4px;font-size:.66rem;text-align:left;cursor:pointer}.dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:0 0 auto}.dot.y{background:var(--green)}.note{width:100%;margin-top:auto;border:1px solid var(--border);border-radius:7px;padding:5px;font-size:.64rem}.note:focus{outline:2px solid #3b82f640;border-color:var(--blue)}.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:10px;border-top:1px solid var(--border);background:#fafafa}.stat{text-align:center;border:1px solid var(--border);border-radius:12px;padding:9px 3px;background:#fff}.stat b{display:block;font-size:1.35rem}.stat span{font-size:.68rem;color:var(--muted)}.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;margin-top:13px}.actions button{min-height:44px;border:1px solid var(--border);border-radius:12px;background:#fff;font-weight:700}.danger{color:#b91c1c}.help{padding:13px;margin-top:13px;color:var(--muted);font-size:.8rem;line-height:1.45}.help strong{color:var(--text)}.overlay{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:#111827bb;backdrop-filter:blur(7px)}.overlay.hide{display:none}.login{max-width:410px;background:#fff;border-radius:20px;padding:24px;text-align:center;box-shadow:0 25px 80px #0005}.login h2{margin:0 0 8px}.login p{color:var(--muted);line-height:1.45}.login button{width:100%;min-height:50px}.toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,20px);opacity:0;background:#111827;color:#fff;padding:10px 15px;border-radius:999px;font-size:.82rem;transition:.2s;z-index:80}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:620px){.day{min-height:103px;padding:4px}.toggle{font-size:.56rem;padding:4px 2px}.note{font-size:.57rem;padding:4px}.actions{grid-template-columns:1fr}.account strong{font-size:.86rem}}
+@media print{.account,.toolbar,.actions,.help,.overlay,.toast,.head button{display:none!important}.app{max-width:none;padding:0}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="head"><div><h1>§ 6 TGV – Fahrtenkalender</h1><p class="sub">Status und Notizen direkt im Kalendertag ändern.</p></div><button id="today" class="btn light">Heute</button></header>
+<section class="card account"><div style="min-width:0"><strong id="uname">Nicht angemeldet</strong><span id="uemail">Google-Anmeldung erforderlich</span><div class="sync"><i id="sdot"></i><span id="stext">Warte auf Anmeldung</span></div></div><button id="logout" class="btn light" hidden>Abmelden</button></section>
+<section class="card"><div class="toolbar"><button id="prev">‹</button><select id="months"></select><button id="next">›</button></div><div class="week"><div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div></div><div id="cal" class="cal"></div><div class="sum"><div class="stat"><b id="c1">0</b><span>gefahren</span></div><div class="stat"><b id="c2">0</b><span>über 11 Stunden</span></div><div class="stat"><b id="c3">0</b><span>Abweichungen</span></div></div></section>
+<section class="card actions"><button id="reset">Monat zurücksetzen</button><button onclick="print()">Drucken / PDF</button><button id="deleteAll" class="danger">Alle Einträge löschen</button></section>
+<section class="card help"><strong>Automatische Vorgabe:</strong><br>Montag–Donnerstag: gefahren und über 11 Stunden. Freitag: gefahren, aber nicht über 11 Stunden. Wochenende: beides nein.<br><br>Nur Abweichungen und Notizen werden in Firestore gespeichert und zwischen deinen Geräten synchronisiert.</section>
+</main>
+<div id="overlay" class="overlay"><div class="login"><h2>Fahrtenkalender öffnen</h2><p>Melde dich auf allen Geräten mit demselben Google-Konto an.</p><button id="login" class="btn dark">Mit Google anmelden</button></div></div><div id="toast" class="toast">Gespeichert</div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import{initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,setDoc,deleteDoc,onSnapshot,getDocs,writeBatch,serverTimestamp}from"https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+const cfg={apiKey:"AIzaSyCmkI1PxYkj5yXJ2k-GBd4zwQ1Hw1K3H1w",authDomain:"bw-fahrtkostenapp.firebaseapp.com",projectId:"bw-fahrtkostenapp",storageBucket:"bw-fahrtkostenapp.firebasestorage.app",messagingSenderId:"806301754050",appId:"1:806301754050:web:c9c2531613c3927cae515b"};
+const app=initializeApp(cfg),auth=getAuth(app),db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})}),provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});
+const $=id=>document.getElementById(id),names=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];let cur=new Date,usr=null,data={},unsub=null,timers=new Map;cur.setDate(1);
+const pad=n=>String(n).padStart(2,"0"),key=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,mkey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+function esc(s){return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;")}
+function def(d){let w=d.getDay();return w===0||w===6?{driven:false,over11:false,note:""}:w===5?{driven:true,over11:false,note:""}:{driven:true,over11:true,note:""}}
+function state(d){let x=data[key(d)];return x?{driven:!!x.driven,over11:!!x.over11,note:typeof x.note==="string"?x.note:""}:def(d)}
+function exception(d){let x=data[key(d)];if(!x)return false;let a=state(d),b=def(d);return a.driven!==b.driven||a.over11!==b.over11||a.note!==""}
+function sync(c,t){$("sdot").className=c;$("stext").textContent=t}function toast(t){$("toast").textContent=t;$("toast").classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").classList.remove("show"),1600)}
+const days=()=>collection(db,"users",usr.uid,"days"),day=k=>doc(db,"users",usr.uid,"days",k);
+async function save(d,n){if(!usr)return;let k=key(d),b=def(d),v={driven:!!n.driven,over11:!!n.over11,note:String(n.note??"").trim()};sync("wait","Wird gespeichert …");try{if(v.driven===b.driven&&v.over11===b.over11&&!v.note)await deleteDoc(day(k));else await setDoc(day(k),{...v,date:k,updatedAt:serverTimestamp()});sync("ok",navigator.onLine?"Synchronisiert":"Offline gespeichert")}catch(e){console.error(e);sync("err","Speichern fehlgeschlagen");toast("Speichern fehlgeschlagen")}}
+function buildMonths(){let y=new Date().getFullYear();for(let a=y-5;a<=y+6;a++)for(let m=0;m<12;m++){let o=document.createElement("option");o.value=`${a}-${pad(m+1)}`;o.textContent=`${names[m]} ${a}`;$("months").append(o)}}
+function render(){$("months").value=mkey(cur);$("cal").innerHTML="";let y=cur.getFullYear(),m=cur.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7,total=Math.ceil((start+last.getDate())/7)*7,today=key(new Date),a=0,b=0,c=0;for(let i=0;i<total;i++){let n=i-start+1,d=new Date(y,m,n);if(d.getMonth()!==m){$("cal").append(document.createElement("div"));continue}let s=state(d),ex=exception(d);if(s.driven)a++;if(s.over11)b++;if(ex)c++;let el=document.createElement("div");el.className="day"+(d.getDay()===0||d.getDay()===6?" weekend":"")+(key(d)===today?" today":"")+(ex?" exception":"");el.innerHTML=`<span class=num>${d.getDate()}</span><button class="toggle drive"><span class="dot ${s.driven?'y':''}"></span>Fahrt</button><button class="toggle away"><span class="dot ${s.over11?'y':''}"></span>&gt; 11 h</button><input class=note maxlength=160 placeholder=Notiz value="${esc(s.note)}">`;el.querySelector(".drive").onclick=()=>{let q=state(d);save(d,{...q,driven:!q.driven})};el.querySelector(".away").onclick=()=>{let q=state(d);save(d,{...q,over11:!q.over11})};let inp=el.querySelector(".note");inp.oninput=()=>{let k=key(d);clearTimeout(timers.get(k));timers.set(k,setTimeout(()=>{let q=state(d);save(d,{...q,note:inp.value})},700))};inp.onblur=()=>{let k=key(d);clearTimeout(timers.get(k));let q=state(d);if(q.note!==inp.value.trim())save(d,{...q,note:inp.value})};inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();inp.blur()}};$("cal").append(el)}$("c1").textContent=a;$("c2").textContent=b;$("c3").textContent=c}
+function listen(){if(unsub)unsub();sync("wait","Daten werden geladen …");unsub=onSnapshot(days(),{includeMetadataChanges:true},snap=>{let n={};snap.forEach(x=>n[x.id]=x.data());data=n;render();sync(snap.metadata.hasPendingWrites||snap.metadata.fromCache&&!navigator.onLine?"wait":"ok",snap.metadata.hasPendingWrites?"Wird synchronisiert …":navigator.onLine?"Synchronisiert":"Offline")},e=>{console.error(e);sync("err","Synchronisierung fehlgeschlagen");toast("Firestore-Zugriff fehlgeschlagen")})}
+$("login").onclick=async()=>{try{/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)?await signInWithRedirect(auth,provider):await signInWithPopup(auth,provider)}catch(e){console.error(e);toast("Anmeldung fehlgeschlagen")}};$("logout").onclick=()=>signOut(auth);$("prev").onclick=()=>{cur.setMonth(cur.getMonth()-1);render()};$("next").onclick=()=>{cur.setMonth(cur.getMonth()+1);render()};$("today").onclick=()=>{cur=new Date;cur.setDate(1);render()};$("months").onchange=()=>{let[y,m]=$("months").value.split("-").map(Number);cur=new Date(y,m-1,1);render()};
+$("reset").onclick=async()=>{let ks=Object.keys(data).filter(k=>k.startsWith(mkey(cur)));if(!ks.length)return toast("Monat entspricht dem Standard");if(!confirm(`Alle Abweichungen und Notizen für ${names[cur.getMonth()]} ${cur.getFullYear()} löschen?`))return;let b=writeBatch(db);ks.forEach(k=>b.delete(day(k)));await b.commit();toast("Monat zurückgesetzt")};$("deleteAll").onclick=async()=>{if(!confirm("Wirklich alle gespeicherten Einträge löschen?"))return;let s=await getDocs(days()),b=writeBatch(db);s.forEach(x=>b.delete(x.ref));await b.commit();toast("Alle Einträge gelöscht")};
+window.addEventListener("offline",()=>usr&&sync("wait","Offline – Änderungen vorgemerkt"));window.addEventListener("online",()=>usr&&sync("wait","Verbindung wird synchronisiert …"));buildMonths();render();try{await getRedirectResult(auth)}catch(e){console.error(e)}onAuthStateChanged(auth,u=>{usr=u;if(u){$("overlay").classList.add("hide");$("logout").hidden=false;$("uname").textContent=u.displayName||"Angemeldet";$("uemail").textContent=u.email||"";listen()}else{if(unsub)unsub();data={};render();$("overlay").classList.remove("hide");$("logout").hidden=true;$("uname").textContent="Nicht angemeldet";$("uemail").textContent="Google-Anmeldung erforderlich";sync("","Warte auf Anmeldung")}});
+</script>
+</body>
+</html>      background: var(--bg);
     }
 
     body {
