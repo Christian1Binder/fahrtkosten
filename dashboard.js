@@ -101,7 +101,7 @@ async function saveJournal() {
     entries: entries.map(clean),
     distance,
     updatedAt: serverTimestamp()
-  });
+  }, { merge: true });
   toast();
 }
 
@@ -110,7 +110,7 @@ async function saveSettings() {
   await setDoc(settingsRef(), {
     commuteProfiles: profiles.map(clean),
     updatedAt: serverTimestamp()
-  });
+  }, { merge: true });
   toast('Profile gespeichert');
 }
 
@@ -118,8 +118,11 @@ function detail(entry) {
   const parts = [];
   if (entry.title) parts.push(entry.title);
   if (entry.type === 'fahrt' && entry.tripKind) {
-    parts.push({ anreise: 'Anreise', heimfahrt: 'Heimfahrt', rueckreise: 'Rückreise' }[entry.tripKind] || entry.tripKind);
+    parts.push({ anreise: 'Anreise', heimfahrt: 'Heimreise', rueckreise: 'Rückreise' }[entry.tripKind] || entry.tripKind);
   }
+  if (entry.manualClass === 'tax') parts.push('Keine Erstattung');
+  if (entry.arrivalTime) parts.push(`Ankunft ${entry.arrivalTime}`);
+  if (entry.departureTime) parts.push(`Abfahrt ${entry.departureTime}`);
   return parts.join(' · ');
 }
 
@@ -248,7 +251,11 @@ async function commitEntry(type, from, to, extra) {
     km: extra.km,
     courseId: extra.courseId,
     tripKind: extra.tripKind,
-    note: '',
+    manualClass: extra.manualClass,
+    allDay: extra.allDay !== false,
+    arrivalTime: extra.allDay === false ? extra.arrivalTime : undefined,
+    departureTime: extra.allDay === false ? extra.departureTime : undefined,
+    note: extra.note || '',
     dayTypes: type === 'uebung' ? {} : undefined
   }));
 
@@ -329,27 +336,62 @@ function openCourse() {
           ${availableCourses.map((course) => `<option value="${course.id}">${esc(course.title || 'Lehrgang')}</option>`).join('')}
         </select>
       </div>
+      <div class="field">
+        <label>Datum</label>
+        <input id="courseDate" type="date" value="${iso(new Date())}">
+      </div>
+      <div class="field">
+        <label>Erstattung</label>
+        <select id="courseReimbursement">
+          <option value="">Automatisch prüfen</option>
+          <option value="paid">Erstattungsfähig</option>
+          <option value="tax">Nicht erstattungsfähig – nur dokumentieren</option>
+        </select>
+      </div>
+      <label class="choice"><span><strong>Ganztägig</strong><small>Uhrzeiten nur eintragen, wenn sie bekannt sind.</small></span><input id="courseAllDay" type="checkbox" checked></label>
+      <div id="courseTimes" class="form" hidden>
+        <div class="field"><label>Ankunft</label><input id="courseArrival" type="time"></div>
+        <div class="field"><label>Abfahrt</label><input id="courseDeparture" type="time"></div>
+      </div>
+      <p class="muted">Anreise, Heimreise und Rückreise zählen jeweils als einfache Strecke.</p>
       <div class="actions">
         <button class="btn" data-course="anreise">Anreise</button>
-        <button class="btn" data-course="heimfahrt">Heimfahrt</button>
+        <button class="btn" data-course="heimfahrt">Heimreise</button>
         <button class="btn" data-course="rueckreise">Rückreise</button>
         <button class="btn" data-course="homo">HomO heute</button>
       </div>
     </div>`);
+
+  $('courseAllDay').onchange = () => {
+    $('courseTimes').hidden = $('courseAllDay').checked;
+    if ($('courseAllDay').checked) {
+      $('courseArrival').value = '';
+      $('courseDeparture').value = '';
+    }
+  };
 
   document.querySelectorAll('[data-course]').forEach((button) => {
     button.onclick = () => {
       const course = availableCourses.find((item) => String(item.id) === String($('course').value));
       if (!course) return;
       const kind = button.dataset.course;
+      const date = $('courseDate').value || iso(new Date());
+      const allDay = $('courseAllDay').checked;
+      const timing = {
+        allDay,
+        arrivalTime: allDay ? undefined : ($('courseArrival').value || undefined),
+        departureTime: allDay ? undefined : ($('courseDeparture').value || undefined)
+      };
       if (kind === 'homo') {
-        addEntry('homo', undefined, undefined, { courseId: course.id, title: course.title });
+        addEntry('homo', date, date, { courseId: course.id, title: course.title, ...timing });
       } else {
-        addEntry('fahrt', undefined, undefined, {
+        addEntry('fahrt', date, date, {
           courseId: course.id,
           tripKind: kind,
-          km: (Number(course.distance) || 0) * (kind === 'heimfahrt' ? 2 : 1),
-          title: course.title
+          km: Number(course.distance) || 0,
+          title: course.title,
+          manualClass: $('courseReimbursement').value,
+          ...timing
         });
       }
     };
@@ -416,15 +458,36 @@ function openPeriod(defaultType = 'urlaub') {
       <div class="field"><label>Von</label><input id="periodFrom" type="date" value="${iso(new Date())}"></div>
       <div class="field"><label>Bis</label><input id="periodTo" type="date" value="${iso(new Date())}"></div>
       <div class="field"><label>Bezeichnung / Ort</label><input id="periodTitle"></div>
+      <label class="choice"><span><strong>Ganztägig</strong><small>Optional Ankunft und Abfahrt ergänzen.</small></span><input id="periodAllDay" type="checkbox" checked></label>
+      <div id="periodTimes" class="form" hidden>
+        <div class="field"><label>Ankunft</label><input id="periodArrival" type="time"></div>
+        <div class="field"><label>Abfahrt</label><input id="periodDeparture" type="time"></div>
+      </div>
       <button id="periodSave" class="btn primary wide">Speichern</button>
     </div>`);
 
-  $('periodSave').onclick = () => addEntry(
-    $('periodType').value,
-    $('periodFrom').value,
-    $('periodTo').value || $('periodFrom').value,
-    { title: $('periodTitle').value.trim() }
-  );
+  $('periodAllDay').onchange = () => {
+    $('periodTimes').hidden = $('periodAllDay').checked;
+    if ($('periodAllDay').checked) {
+      $('periodArrival').value = '';
+      $('periodDeparture').value = '';
+    }
+  };
+
+  $('periodSave').onclick = () => {
+    const allDay = $('periodAllDay').checked;
+    addEntry(
+      $('periodType').value,
+      $('periodFrom').value,
+      $('periodTo').value || $('periodFrom').value,
+      {
+        title: $('periodTitle').value.trim(),
+        allDay,
+        arrivalTime: allDay ? undefined : ($('periodArrival').value || undefined),
+        departureTime: allDay ? undefined : ($('periodDeparture').value || undefined)
+      }
+    );
+  };
 }
 
 function openProfiles(firstSetup = false) {
