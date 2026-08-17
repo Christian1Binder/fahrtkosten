@@ -13,15 +13,15 @@ if(app){
   const showMessage=text=>{const toast=$('toast');if(!toast)return;toast.textContent=text;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800)};
 
   async function saveVacation(){
-    const from=$('periodFrom')?.value,to=$('periodTo')?.value||from,title=$('periodTitle')?.value.trim()||'',vacationDays=Number($('vacationDays')?.value);
+    const from=$('periodFrom')?.value,to=$('periodTo')?.value||from,title=$('periodTitle')?.value.trim()||'',vacationDays=Number($('vacationDays')?.value),allDay=$('periodAllDay')?.checked!==false,arrivalTime=allDay?undefined:($('periodArrival')?.value||undefined),departureTime=allDay?undefined:($('periodDeparture')?.value||undefined);
     if(!user)return alert('Bitte zuerst anmelden.');
     if(!from)return alert('Bitte ein Startdatum angeben.');
     if(to<from)return alert('Das Bis-Datum liegt vor dem Von-Datum.');
     if(!Number.isFinite(vacationDays)||vacationDays<0)return alert('Bitte die tatsächlich benötigten Urlaubstage eintragen.');
     const existing=entries.filter(e=>overlaps(e,from,to));
     if(existing.length&&!confirm(`Im gewählten Zeitraum bestehen bereits ${existing.length} Eintrag bzw. Einträge. Urlaub trotzdem zusätzlich speichern?`))return;
-    entries=[...entries,{id:Date.now(),type:'urlaub',from,to,title,note:'',vacationDays}];
-    await setDoc(journalRef(),{entries,distance,updatedAt:serverTimestamp()});
+    entries=[...entries,{id:Date.now(),type:'urlaub',from,to,title,note:'',vacationDays,allDay,...(arrivalTime?{arrivalTime}:{}),...(departureTime?{departureTime}:{})}];
+    await setDoc(journalRef(),{entries,distance,updatedAt:serverTimestamp()},{merge:true});
     closeSheet();showMessage('Urlaub gespeichert');
   }
 
